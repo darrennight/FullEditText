@@ -1,9 +1,12 @@
 package com.wxp.fulledittext;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.R.integer;
 import android.content.Context;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -15,8 +18,10 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class FullText extends EditText {
 
@@ -51,6 +56,8 @@ public class FullText extends EditText {
 	
 	int mLines=0;
 	 int tempStart=0;
+	 int lineStart=0;
+	 int lineCount = 0;
 	public FullText(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init(context);
@@ -75,7 +82,7 @@ public class FullText extends EditText {
 		mPaint.setDither(true);
 		mPaint.setTextSize(getTextSize());
 		DBUG.e("mPainttextsize"+mPaint.getTextSize());
-		mSpaceWidth = mPaint.measureText("2");
+		mSpaceWidth = mPaint.measureText("w");
 		mLineHeight = getLineHeight();
 	
 		
@@ -90,20 +97,32 @@ public class FullText extends EditText {
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count,
 					int after) {
-				// TODO Auto-generated method stub
+				
 				
 			}
 			
 			@Override
 			public void afterTextChanged(Editable s) {
-				// TODO Auto-generated method stub
+				
 				
 			}
 		});
 	
+		
+		OnEditorActionListener onEditorActionListener = new OnEditorActionListener() {
+			
+			@Override
+			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+				
+				return false;
+			}
+		};
          
 	}
-/*
+
+	public void measureLine(){
+		
+	}
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		int widthMode = MeasureSpec.getMode(widthMeasureSpec);
@@ -111,34 +130,12 @@ public class FullText extends EditText {
 		int widthSize = MeasureSpec.getSize(widthMeasureSpec);
 		int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
-		mFullTextWidth = widthSize-15;
+		mFullTextWidth = widthSize;
 
 		mFullTextHeight = heightSize;
 		mLines = (int) (mFullTextHeight/mLineHeight);
-	for (int i = mLines; i >=0; i--) {
-			getEditableText().append("\n");
-		}
+
 		setMeasuredDimension(mFullTextWidth, mFullTextHeight);
-	}*/
-
-	/**
-	 * 初始化点击的位置之上的所有行
-	 */
-	public void addLineAbove(int line) {
-		for (int i = 0; i < line; i++) {
-
-		}
-	}
-
-	/**
-	 * 在点击位置之前插入空格
-	 */
-	public String addSpaceBefore(int count) {
-              String temp="";
-              for (int i = 0; i < count; i++) {
-				temp+="2";
-			}
-              return temp;
 	}
 
 	@Override
@@ -153,96 +150,64 @@ public class FullText extends EditText {
 		tempStart = 0;
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			
-			if (mFirstDown) {
-				mSelectSatrt = getSelectionStart();
+			   mSelectSatrt = getSelectionStart();
+			   lineStart = getOffsetForPosition(0, mClickPosY);
+			if (mFirstDown) {	
 				mClickPosX = event.getX();
 				mClickPosY = event.getY();
 				mSpaceCount = (int) (mClickPosX / mSpaceWidth);
 				mClickLine = (int) (mClickPosY / mLineHeight);
+				lineCount = getLineCount();
 				mFirstDown = false;
-	
+				
 			}
+			if ((mClickLine+1)>lineCount) {
+				for (int i = 0; i < (mClickLine+1-lineCount); i++) {
+					editable.append("\n");
+				}
 
+				int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
+				Log.e("wxp", "woqu======"+woqu);
+				if (mSelectSatrt == woqu) {
+					while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
+						editable.append("0");
+						mSelectSatrt++;
+					}	
+				}
+			} else if ((mClickLine+1) == lineCount){
+				int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
+				Log.e("wxp", "woqu======"+woqu);
+				if (mSelectSatrt == woqu) {
+					while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
+						editable.append("0");
+						mSelectSatrt++;
+					}	
+				}
+			} else {
+
+				int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
+				Log.e("wxp", "woqu======"+woqu);
+				if (mSelectSatrt == woqu) {
+					while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
+						editable.insert(mSelectSatrt,"0");
+						mSelectSatrt++;
+					}	
+				}
+			}
 			break;
 
 		case MotionEvent.ACTION_UP:
-			Log.e("wxp", "mSelectSatrt:"+mSelectSatrt);
-			
-			
-			editable.delete(mSelectSatrt, mSelectSatrt);
-			while ((mPaint.measureText(editable.toString(), 0, mSelectSatrt+tempStart))<mClickPosX) {
-				editable.append("2");			
-				tempStart +=1;
-			}
-			DBUG.e("插入了"+tempStart);
-			//setSelection(mSelectSatrt+tempStart);
-			//setSelection(0);
-		   
-		   new Handler().post(new Runnable() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				setSelection(mSelectSatrt+tempStart);
-			}
-		});
-			
-/*			if (mClickLine == 0) {
-				int tempStart=0;					
-				while ((mPaint.measureText(editable.toString(), 0, mSelectSatrt+tempStart))<mClickPosX) {
-					editable.append("2");			
-					tempStart +=1;
-					//mContentList.add(0, );
-				}
-			}*/
+			Log.e("wxp", "mSelectSatrt:"+mSelectSatrt);			
+			Log.e("wxp", "lineStart======"+lineStart);
 			
 			
 			
-/*			if (mClickLine == 0&&mLastClickLine==0) {
-				int singlelinelength=getText().length();
-				
-				if (mSelectSatrt>=singlelinelength) {
-					int tempStart=0;					
-					while ((mPaint.measureText(editable.toString(), 0, mSelectSatrt+tempStart))<mClickPosX) {
-						editable.append("2");			
-						tempStart +=1;
-					}
-					if ((mPaint.measureText(editable.toString()+"2", 0, mSelectSatrt+1))>=mFullTextWidth) {
-						editable.append("\n");		
-					}
-					
-					mLastClickLine=0;
-				}else {
-					
-				}
-				
-					
-			} else if(mClickLine>mLastClickLine){
-				for (int i = mLastClickLine; i < mClickLine; i++) {
-					editable.append("\n");
-				}				
-				Log.e("wxp", "mClickLine:"+mClickLine+ "  mLastClickLine"+mLastClickLine);
+			
+			
 
-				editable.append(addSpaceBefore(mSpaceCount));
-				mLastClickLine = mClickLine;
-			} else if (mClickLine==mLastClickLine&&mClickLine!=0) {
-				int selectsatrt=getSelectionStart();
-				int linestart = getTheLineStart(selectsatrt);
-				Log.e("wxp", "这一行开始："+linestart);
-				//editable.insert(linestart+1, "wxp");
-				
-				int tempStart=0;				
-				while ((mPaint.measureText(editable.toString(), linestart, mSelectSatrt+tempStart))<mClickPosX) {
-					editable.append("2");			
-					tempStart +=1;
-				}
-				//mLastClickLine = mClickLine;
-			}*/
-			
-		
-			Log.e("wxp", "getText:"+getText().toString());
+
 			mFirstDown = true;
+			
 			break;
 
 		default:
@@ -252,42 +217,26 @@ public class FullText extends EditText {
 
 		// invalidate();
 
+		
 		return super.onTouchEvent(event);
 	}
-
 	
-	/**
-	 * 通过检测换行符号来判断光标点击的这一行开头的位置
-	 * @return
-	 */
-	public int getTheLineStart(int selectStart){
-		int start=selectStart-1;
-		Log.e("wxp", "当前字符是"+String.valueOf(editable.charAt(start)));
-		while (!String.valueOf(editable.charAt(start)).equals("\n")) {
-			start-=1;			
-		}
-		Log.e("wxp", "这一行开头位置是"+start);
-		return start;
-	}
-	
-
-	public void insertWordContent(int i,String w){
-		Log.e("wxp","insertWordContent");
-		if (mPaint.measureText(mContentList.get(i)+w)>mFullTextWidth) {
-			mContentList.add(i,mContentList.get(i)+"\n");
-			mContentList.add(i+1, w);
-			mContentList.remove(mLines);
-		} else {
-			mContentList.add(i,mContentList.get(i)+w);
+	public int getVOffset(){
+		int height= 0;
+		Class temp = TextView.class;
+		try {
+			Method method = temp.getMethod("getVerticalOffset", Boolean.class);
+			height = (Integer)method.invoke(this, true);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
-		Log.e("wxp",mContentList.get(i));
-	}
-	public void insertLineContent(int i,String content){
-		mContentList.add(i, content);
-		mContentList.remove(mLines);
+		return height;
 	}
 	
+	private Handler myHandler =new Handler();
+
 	public int dpToPx(int dp){
 		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
 	}

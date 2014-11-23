@@ -4,15 +4,9 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <com.wxp.fulledittext.FullText
-        android:id="@+id/id_edit_main_et"
-        android:padding="0dp"
+    <DynamicLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#00000000"
-        android:focusable="true"
-        android:gravity="top"
-        android:singleLine="false"
-        />
+        android:layout_height="match_parent" >
+    </DynamicLayout>
 
 </RelativeLayout>
