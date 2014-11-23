@@ -58,6 +58,9 @@ public class FullText extends EditText {
 	 int tempStart=0;
 	 int lineStart=0;
 	 int lineCount = 0;
+	 Handler mHandler;
+	 int temp=0;
+	 int dstart=0;
 	public FullText(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init(context);
@@ -84,7 +87,7 @@ public class FullText extends EditText {
 		DBUG.e("mPainttextsize"+mPaint.getTextSize());
 		mSpaceWidth = mPaint.measureText("w");
 		mLineHeight = getLineHeight();
-	
+		mHandler = new Handler();
 		
 		FontMetrics fontMetrics = mPaint.getFontMetrics();
 		addTextChangedListener(new TextWatcher() {
@@ -176,18 +179,17 @@ public class FullText extends EditText {
 				} else   if ((mClickLine+1) == lineCount){
 							int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
 							setSelection(woqu, woqu);
-							lineStart = getOffsetForPosition(0, mClickPosY);
-							 setSelection(woqu, woqu);
-						} else {
+			    } else {
 							int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
+							setSelection(woqu, woqu);
 							lineStart = getOffsetForPosition(0, mClickPosY);
 							 mSelectSatrt = getSelectionStart();
-							if (mSelectSatrt == woqu) {
+							
 								while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
 									editable.insert(mSelectSatrt,"0");
 									mSelectSatrt++;
-								}	
-							}
+								}
+								return super.onTouchEvent(event);
 						}
 			break;
 
@@ -196,16 +198,22 @@ public class FullText extends EditText {
 			 if ((mClickLine+1) == lineCount){
 					int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
 					lineStart = getOffsetForPosition(0, mClickPosY);
-					int dstart = mSelectSatrt - lineStart;
+					dstart = mSelectSatrt - lineStart;
 					 setSelection(woqu, woqu);
-					 int temp=0;
+					temp=0;
 					 Log.e("wxp", "lineStart======"+lineStart+"       ,dstart====="+dstart);
-					while (mPaint.measureText(editable.toString(), lineStart, lineStart+dstart+temp)<mClickPosX) {
-							editable.append("0");
-							temp++;							
-					     }
-						//return super.onTouchEvent(event);
-				} 
+					 mHandler.post(new Runnable() {
+						
+						@Override
+						public void run() {
+							while (mPaint.measureText(editable.toString(), lineStart, lineStart+dstart+temp)<mClickPosX) {
+								editable.append("0");
+								temp++;							
+						     }							
+						}
+					});
+					return super.onTouchEvent(event);
+				}
 			 
 			
 			
