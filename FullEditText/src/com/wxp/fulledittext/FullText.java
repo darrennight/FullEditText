@@ -152,60 +152,70 @@ public class FullText extends EditText {
 		case MotionEvent.ACTION_DOWN:
 			   mSelectSatrt = getSelectionStart();
 			   lineStart = getOffsetForPosition(0, mClickPosY);
-			if (mFirstDown) {	
-				mClickPosX = event.getX();
-				mClickPosY = event.getY();
-				mSpaceCount = (int) (mClickPosX / mSpaceWidth);
-				mClickLine = (int) (mClickPosY / mLineHeight);
-				lineCount = getLineCount();
-				mFirstDown = false;
-				
-			}
-			if ((mClickLine+1)>lineCount) {
-				for (int i = 0; i < (mClickLine+1-lineCount); i++) {
-					editable.append("\n");
+			   lineCount = getLineCount();
+			   if (mFirstDown) {	
+					Log.e("wxp", "mFirstDown======"+mFirstDown);
+					mClickPosX = event.getX();
+					mClickPosY = event.getY();
+					mSpaceCount = (int) (mClickPosX / mSpaceWidth);
+					mClickLine = (int) (mClickPosY / mLineHeight);			
+					mFirstDown = false;			
 				}
-
-				int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
-				Log.e("wxp", "woqu======"+woqu);
-				if (mSelectSatrt == woqu) {
-					while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
-						editable.append("0");
-						mSelectSatrt++;
-					}	
-				}
-			} else if ((mClickLine+1) == lineCount){
-				int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
-				Log.e("wxp", "woqu======"+woqu);
-				if (mSelectSatrt == woqu) {
-					while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
-						editable.append("0");
-						mSelectSatrt++;
-					}	
-				}
-			} else {
-
-				int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
-				Log.e("wxp", "woqu======"+woqu);
-				if (mSelectSatrt == woqu) {
-					while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
-						editable.insert(mSelectSatrt,"0");
-						mSelectSatrt++;
-					}	
-				}
-			}
+			   if ((mClickLine+1)>lineCount) {
+					setSelection(getText().length(), getText().length());
+					for (int i = 0; i < (mClickLine+1-lineCount); i++) {
+						editable.append("\n");
+					}
+					lineStart = getOffsetForPosition(0, mClickPosY);
+					mSelectSatrt = getSelectionStart();
+						while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
+							editable.append("0");
+							mSelectSatrt++;
+						}	
+				  return super.onTouchEvent(event);
+				} else   if ((mClickLine+1) == lineCount){
+							int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
+							setSelection(woqu, woqu);
+							lineStart = getOffsetForPosition(0, mClickPosY);
+							 setSelection(woqu, woqu);
+						} else {
+							int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
+							lineStart = getOffsetForPosition(0, mClickPosY);
+							 mSelectSatrt = getSelectionStart();
+							if (mSelectSatrt == woqu) {
+								while (mPaint.measureText(editable.toString(), lineStart, mSelectSatrt)<mClickPosX) {
+									editable.insert(mSelectSatrt,"0");
+									mSelectSatrt++;
+								}	
+							}
+						}
 			break;
 
 		case MotionEvent.ACTION_UP:
-			Log.e("wxp", "mSelectSatrt:"+mSelectSatrt);			
-			Log.e("wxp", "lineStart======"+lineStart);
+			 mSelectSatrt = getSelectionStart();
+			 if ((mClickLine+1) == lineCount){
+					int woqu =getOffsetForPosition(mClickPosX, mClickPosY);
+					lineStart = getOffsetForPosition(0, mClickPosY);
+					int dstart = mSelectSatrt - lineStart;
+					 setSelection(woqu, woqu);
+					 int temp=0;
+					 Log.e("wxp", "lineStart======"+lineStart+"       ,dstart====="+dstart);
+					while (mPaint.measureText(editable.toString(), lineStart, lineStart+dstart+temp)<mClickPosX) {
+							editable.append("0");
+							temp++;							
+					     }
+						//return super.onTouchEvent(event);
+				} 
+			 
 			
 			
-			
-			
-			
-
-
+/*			if ((mClickLine+1)>lineCount) {
+				setSelection(getText().length(), getText().length());
+			} else if ((mClickLine+1) == lineCount){
+				setSelection(lineStart+mSelectSatrt, lineStart+mSelectSatrt);
+			} else {
+				setSelection(lineStart+mSelectSatrt, lineStart+mSelectSatrt);
+			}*/
 			mFirstDown = true;
 			
 			break;
