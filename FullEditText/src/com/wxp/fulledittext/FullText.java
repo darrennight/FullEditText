@@ -202,10 +202,26 @@ public class FullText extends EditText {
 				}
 				return super.onTouchEvent(event);
 			} else {
-				// 如果触摸区域刚好处在当前内容的最后一行
+				// 如果触摸区域刚好处在当前内容内部
 				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
 				setSelection(woqu, woqu);
 				// 接着在ACTION_UP中处理
+				if ((mClickLine + 1) == lineCount) {
+					dstart = mSelectSatrt - lineStart;
+					setSelection(woqu, woqu);
+					temp = 0;
+					myHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							while (mPaint.measureText(editable.toString(),
+									lineStart, lineStart + dstart + temp) < mClickPosX) {
+								editable.append(" ");
+								temp++;
+							}
+						}
+					});
+					return super.onTouchEvent(event);
+				}
 			}
 			break;
 
@@ -233,30 +249,17 @@ public class FullText extends EditText {
 				} else {
 					if (mSelectSatrt <= woqu) {
 						DBUG.e("in th content...mSelectSatrt:"+mSelectSatrt+"  woqu :"+woqu);
-					} else {
-						dstart = mSelectSatrt - lineStart;
-						setSelection(woqu, woqu);
-						temp = 0;
-						myHandler.post(new Runnable() {
-							@Override
-							public void run() {
-								while (mPaint.measureText(editable.toString(),
-										lineStart, lineStart + dstart + temp) < mClickPosX) {
-									editable.append(" ");
-									temp++;
-								}
-							}
-						});
-						return super.onTouchEvent(event);
-					}
+					} 
 				}
 
 			} else if ((mClickLine + 1) < lineCount) {
 				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
 				lineStart = getOffsetForPosition(0, mClickPosY);
 				char b = getText().charAt(woqu - 1);
+				char c = getText().charAt(woqu);
 				String a = "\n";
-				if (String.valueOf(b).equals(a)) {
+				if (String.valueOf(b).equals(a) || String.valueOf(c).equals(a)) {
+					//如果前一个是换行符或者后一个是换行符就在之前的位置插入空格
 					setSelection(woqu, woqu);
 
 					lineStart = getOffsetForPosition(0, mClickPosY);
@@ -269,6 +272,7 @@ public class FullText extends EditText {
 					}
 
 				} else {
+					//否则不做操作
 					DBUG.e("kai");
 				}
 
