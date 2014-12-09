@@ -184,11 +184,15 @@ public class FullText extends EditText {
 				}
 				mFirstDown = false;
 			}
+
 			if ((mClickLine + 1) > lineCount) {
+				// 如果触摸区域所在行大于当前文本内容的行数
 				setSelection(getText().length(), getText().length());
 				for (int i = 0; i < (mClickLine + 1 - lineCount); i++) {
+					// 就初始化之前的行（通过添加换行符）
 					editable.append("\n");
 				}
+				// 接着还要初始化这一行之前的内容（通过添加空格）
 				lineStart = getOffsetForPosition(0, mClickPosY);
 				mSelectSatrt = getSelectionStart();
 				while (mPaint.measureText(editable.toString(), lineStart,
@@ -197,28 +201,18 @@ public class FullText extends EditText {
 					mSelectSatrt++;
 				}
 				return super.onTouchEvent(event);
-			} else if ((mClickLine + 1) == lineCount) {
-				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
-				setSelection(woqu, woqu);
 			} else {
+				// 如果触摸区域刚好处在当前内容的最后一行
 				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
 				setSelection(woqu, woqu);
-				lineStart = getOffsetForPosition(0, mClickPosY);
-				mSelectSatrt = getSelectionStart();
-
-				while (mPaint.measureText(editable.toString(), lineStart,
-						mSelectSatrt) < mClickPosX) {
-					editable.insert(mSelectSatrt, " ");
-					mSelectSatrt++;
-				}
-				return super.onTouchEvent(event);
+				// 接着在ACTION_UP中处理
 			}
 			break;
 
 		case MotionEvent.ACTION_UP:
 			mSelectSatrt = getSelectionStart();
 			if ((mClickLine + 1) == lineCount) {
-
+				DBUG.e("in th lineCount...");
 				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
 				lineStart = getOffsetForPosition(0, mClickPosY);
 				if (mClickLine == 0) {
@@ -238,7 +232,7 @@ public class FullText extends EditText {
 
 				} else {
 					if (mSelectSatrt <= woqu) {
-						DBUG.e("in th content...");
+						DBUG.e("in th content...mSelectSatrt:"+mSelectSatrt+"  woqu :"+woqu);
 					} else {
 						dstart = mSelectSatrt - lineStart;
 						setSelection(woqu, woqu);
@@ -255,6 +249,27 @@ public class FullText extends EditText {
 						});
 						return super.onTouchEvent(event);
 					}
+				}
+
+			} else if ((mClickLine + 1) < lineCount) {
+				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
+				lineStart = getOffsetForPosition(0, mClickPosY);
+				char b = getText().charAt(woqu - 1);
+				String a = "\n";
+				if (String.valueOf(b).equals(a)) {
+					setSelection(woqu, woqu);
+
+					lineStart = getOffsetForPosition(0, mClickPosY);
+					mSelectSatrt = getSelectionStart();
+
+					while (mPaint.measureText(editable.toString(), lineStart,
+							mSelectSatrt) < mClickPosX) {
+						editable.insert(mSelectSatrt, " ");
+						mSelectSatrt++;
+					}
+
+				} else {
+					DBUG.e("kai");
 				}
 
 			}
