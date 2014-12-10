@@ -255,26 +255,49 @@ public class FullText extends EditText {
 			} else if ((mClickLine + 1) < lineCount) {
 				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
 				lineStart = getOffsetForPosition(0, mClickPosY);
-				char b = getText().charAt(woqu - 1);
-				char c = getText().charAt(woqu);
+				
 				String a = "\n";
-				if (String.valueOf(b).equals(a) || String.valueOf(c).equals(a)) {
-					//如果前一个是换行符或者后一个是换行符就在之前的位置插入空格
-					setSelection(woqu, woqu);
+				if (mClickLine == 0) {
+					char c = getText().charAt(woqu);
+					if (String.valueOf(c).equals(a)) {
+						//如果前一个是换行符或者后一个是换行符就在之前的位置插入空格
+						setSelection(woqu, woqu);
 
-					lineStart = getOffsetForPosition(0, mClickPosY);
-					mSelectSatrt = getSelectionStart();
+						lineStart = getOffsetForPosition(0, mClickPosY);
+						mSelectSatrt = getSelectionStart();
 
-					while (mPaint.measureText(editable.toString(), lineStart,
-							mSelectSatrt) < mClickPosX) {
-						editable.insert(mSelectSatrt, " ");
-						mSelectSatrt++;
+						while (mPaint.measureText(editable.toString(), lineStart,
+								mSelectSatrt) < mClickPosX) {
+							editable.insert(mSelectSatrt, " ");
+							mSelectSatrt++;
+						}
+
+					} else {
+						//否则不做操作
+						DBUG.e("kai");
 					}
-
 				} else {
-					//否则不做操作
-					DBUG.e("kai");
+					char b = getText().charAt(woqu - 1);
+					char c = getText().charAt(woqu);
+					if (String.valueOf(b).equals(a) || String.valueOf(c).equals(a)) {
+						//如果前一个是换行符或者后一个是换行符就在之前的位置插入空格
+						setSelection(woqu, woqu);
+
+						lineStart = getOffsetForPosition(0, mClickPosY);
+						mSelectSatrt = getSelectionStart();
+
+						while (mPaint.measureText(editable.toString(), lineStart,
+								mSelectSatrt) < mClickPosX) {
+							editable.insert(mSelectSatrt, " ");
+							mSelectSatrt++;
+						}
+
+					} else {
+						//否则不做操作
+						DBUG.e("kai");
+					}
 				}
+				
 
 			}
 
