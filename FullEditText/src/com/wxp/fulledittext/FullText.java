@@ -206,6 +206,8 @@ public class FullText extends EditText {
 				// 如果触摸区域刚好处在当前内容内部
 				int woqu = getOffsetForPosition(mClickPosX, mClickPosY);
 				setSelection(woqu, woqu);
+				mSelectSatrt = getSelectionStart();
+				lineStart = getOffsetForPosition(0, mClickPosY);
 				// 接着在ACTION_UP中处理
 				if ((mClickLine + 1) == lineCount) {
 					dstart = mSelectSatrt - lineStart;
@@ -240,8 +242,6 @@ public class FullText extends EditText {
 								temp++;
 							}
 						
-	
-
 				} else {
 					if (mSelectSatrt <= woqu) {
 						DBUG.e("in th content...mSelectSatrt:"+mSelectSatrt+"  woqu :"+woqu);
@@ -276,23 +276,25 @@ public class FullText extends EditText {
 						}
 					} else {
 						char b = getText().charAt(woqu - 1);
-						char c = getText().charAt(woqu);
-						if (String.valueOf(b).equals(a) || String.valueOf(c).equals(a)) {
-							//如果前一个是换行符或者后一个是换行符就在之前的位置插入空格
-							setSelection(woqu, woqu);
+						if (woqu <getText().length()) {
+							char c = getText().charAt(woqu);
+							if (String.valueOf(b).equals(a) || String.valueOf(c).equals(a)) {
+								//如果前一个是换行符或者后一个是换行符就在之前的位置插入空格
+								setSelection(woqu, woqu);
 
-							lineStart = getOffsetForPosition(0, mClickPosY);
-							mSelectSatrt = getSelectionStart();
+								lineStart = getOffsetForPosition(0, mClickPosY);
+								mSelectSatrt = getSelectionStart();
 
-							while (mPaint.measureText(editable.toString(), lineStart,
-									mSelectSatrt) < mClickPosX) {
-								editable.insert(mSelectSatrt, " ");
-								mSelectSatrt++;
+								while (mPaint.measureText(editable.toString(), lineStart,
+										mSelectSatrt) < mClickPosX) {
+									editable.insert(mSelectSatrt, " ");
+									mSelectSatrt++;
+								}
+
+							} else {
+								//否则不做操作
+
 							}
-
-						} else {
-							//否则不做操作
-							DBUG.e("kai");
 						}
 					}
 					
