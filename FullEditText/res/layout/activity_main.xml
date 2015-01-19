@@ -4,15 +4,19 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
+    <TextView
+        android:id="@+id/id_edit_main_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <com.wxp.fulledittext.FullText
         android:id="@+id/id_edit_main_et"
-        android:padding="0dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#00000000"
         android:focusable="true"
         android:gravity="top"
-        android:singleLine="false"
-        />
+        android:padding="0dp"
+        android:singleLine="false" />
 
 </RelativeLayout>
